@@ -1,26 +1,14 @@
 const puppeteer = require('puppeteer')
-const {getFile, MD5, createTmpDir} = require('./filesSys')
+const {MD5, createTmpDir} = require('./filesSys')
 const path = require('path')
 
 class Browser {
   constructor (opt) {
     this.browser = null
-    this.schedule = opt.schedule || 1800 // second
-    this.expires = opt.exports || 3600 // second
     this.tempDir = './tmp/'
-
-    // {
-    //   'md5 string': {
-    //     fileName: 'mg5 string',
-    //     path: 'assets/img.png',
-    //     updated: 1234567890
-    //   }
-    // }
-    this.cache = {}
 
     this.init()
     this.createTempDir()
-    this.setSchedule()
   }
 
   async init () {
@@ -38,7 +26,6 @@ class Browser {
    * @param  {Number} options.width    屏幕宽度，图片最大宽度
    * @param  {Number} options.height   屏幕高度，图片最大高度
    * @param  {String} options.fileName 文件名
-   * @return {Buffer}                  图片
    */
   async screenshot ({
     target, width = 1366, height = 768, fileName, selector
@@ -75,43 +62,12 @@ class Browser {
 
     page.close()
 
-    this.cache[fileName] = {
+    return {
       fileName: fileName,
       path: filePath,
-      updated: Date.now()
+      updated: Date.now(),
+      img
     }
-
-    return img
-  }
-  /**
-   * 返回缓存图片
-   * @param  {String} fileName 文件名
-   * @return {Object}
-   */
-  getCache (fileName) {
-    return this.cache[fileName] || null
-  }
-  /**
-   * 清除缓存
-   */
-  clearCache () {
-    const expires = this.expires * 1000 // 缓存时间 ms
-    const now = Date.now()
-    Object.keys(this.cache).forEach(key => {
-      const o = this.cache[key]
-      // 如果长时间（大于缓存时间）未更新，则销毁对象
-      if (now - o.updated > expires) {
-        delete this.cache[key]
-      }
-    })
-  }
-  /**
-   * 定时运行“清除缓存”程序
-   */
-  setSchedule () {
-    setInterval(() => {
-      this.clearCache()
-    }, this.schedule * 1000)
   }
   /**
    * 获取截图
@@ -119,32 +75,25 @@ class Browser {
    * @param  {Number} options.width    屏幕宽度，图片最大宽度
    * @param  {Number} options.height   屏幕高度，图片最大高度
    * @param  {String} options.fileName 文件名
-   * @return {Buffer}                  图片
    */
   async getImg ({
     target, width, height, queryString, selector
   }) {
     const md5 = MD5(queryString)
 
-    const cache = this.getCache(md5)
-    if (cache) {
-      return getFile(cache.path)
-    } else {
+    // width必需是大于0的数字
+    width = parseInt(width) || 1366
 
-      // width必需是大于0的数字
-      width = parseInt(width) || 1366
+    // height必需是大于0的数字
+    height = parseInt(height) || 768
 
-      // height必需是大于0的数字
-      height = parseInt(height) || 768
-
-      return await this.screenshot({
-        target,
-        width,
-        height,
-        fileName: md5,
-        selector
-      })
-    }
+    return await this.screenshot({
+      target,
+      width,
+      height,
+      fileName: md5,
+      selector
+    })
   }
 }
 
