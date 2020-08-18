@@ -10,10 +10,11 @@ router.get('/img', async ctx => {
 
   ctx.type = 'image/png'
 
-  ctx.body = await browser.screenshot({
-    url: query.url,
+  ctx.body = await browser.getImg({
+    target: query.url,
     width: query.w,
-    height: query.h
+    height: query.h,
+    queryString: ctx.querystring
   })
 })
 
