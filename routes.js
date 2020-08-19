@@ -7,10 +7,9 @@ const browser = new Browser() // 浏览器对象
 // 返回图片
 router.get('/img', async ctx => {
   const query = ctx.query
-  ctx.type = 'image/png'
 
-
-  const selector = query.s.replace(/@/g, '#')
+  // 将css选择器的#用@替换
+  const selector = query.s && query.s.replace(/@/g, '#')
 
   ctx.body = await browser.getImg({
     target: query.url,
@@ -18,7 +17,10 @@ router.get('/img', async ctx => {
     height: query.h,
     selector: selector,
     queryString: ctx.querystring
-  })
+  }).then(res => {
+    ctx.type = 'image/png'
+    return res
+  }, err => err.stack)
 })
 
 module.exports = router
