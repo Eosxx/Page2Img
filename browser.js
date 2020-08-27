@@ -1,13 +1,13 @@
 const puppeteer = require('puppeteer')
-const {getFile, MD5} = require('./filesSys')
-// TODO
-// 检测目录是否存在
-// 配置目录项
+const {getFile, MD5, createTmpDir} = require('./filesSys')
+const path = require('path')
+
 class Browser {
   constructor () {
     this.browser = null
     this.schedule = 30 // minute
     this.expires = 60 // minute
+    this.tempDir = './tmp/'
 
     // {
     //   'md5 string': {
@@ -19,6 +19,7 @@ class Browser {
     this.cache = {}
 
     this.init()
+    this.createTempDir()
     this.setSchedule()
   }
 
@@ -26,6 +27,10 @@ class Browser {
     this.browser = await puppeteer.launch({
       ignoreHTTPSErrors: true, // 是否在导航期间忽略 HTTPS 错误. 默认是 false。
     })
+  }
+  createTempDir () {
+    this.tempDir = createTmpDir()
+    console.info(`create directory ${this.tempDir}`)
   }
   /**
    * 截图
@@ -59,10 +64,12 @@ class Browser {
       elm = await page.$(selector)
     }
 
+    const filePath = path.resolve(__dirname, this.tempDir, `${fileName}.png`)
+
     const img = await elm.screenshot({
       type: 'png', // 即使是质量100的jpeg，也不如png，所以这里建议用png。
       fullPage: isFullPage, // 如果设置为true，则对完整的页面（需要滚动的部分也包含在内）。默认是false
-      path: `tmp/${fileName}.png`, // 截图保存路径。截图图片类型将从文件扩展名推断出来。如果是相对路径，则从当前路径解析。如果没有指定路径，图片将不会保存到硬盘。
+      path: filePath, // 截图保存路径。截图图片类型将从文件扩展名推断出来。如果是相对路径，则从当前路径解析。如果没有指定路径，图片将不会保存到硬盘。
       // quality: 100, // 图片质量, 可选值 0-100. png 类型不适用。
     })
 
@@ -70,7 +77,7 @@ class Browser {
 
     this.cache[fileName] = {
       fileName: fileName,
-      path: `tmp/${fileName}.png`,
+      path: filePath,
       updated: Date.now()
     }
 
@@ -89,8 +96,6 @@ class Browser {
    * @return {[type]} [description]
    */
   clearCache () {
-    // TODO
-    // 清除缓存同时删除图片
     const expires = this.expires * 60 * 1000 // 缓存时间 ms
     const now = Date.now()
     Object.keys(this.cache).forEach(key => {

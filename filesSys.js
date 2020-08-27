@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
+const os = require('os')
 
 // 读取文件数据
 function getFile (filePath) {
@@ -16,5 +17,8 @@ function MD5 (data) {
   return md5.update(data).digest('hex')
 }
 
-module.exports = {getFile, MD5}
+function createTmpDir () {
+  return fs.mkdtempSync(path.resolve(os.tmpdir(), 'page2img-'))
+}
 
+module.exports = {getFile, MD5, createTmpDir}
