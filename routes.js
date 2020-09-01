@@ -1,8 +1,13 @@
 const Router = require('koa-router')
 const Browser = require('./browser')
+require('dotenv').config()
+const envs = process.env
 
 const router = new Router()
-const browser = new Browser() // 浏览器对象
+const browser = new Browser({
+  schedule: parseInt(envs.SCHEDULE),
+  expires: parseInt(envs.EXPIRES)
+}) // 浏览器对象
 
 // 返回图片
 router.get('/img', async ctx => {

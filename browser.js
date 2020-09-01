@@ -3,10 +3,10 @@ const {getFile, MD5, createTmpDir} = require('./filesSys')
 const path = require('path')
 
 class Browser {
-  constructor () {
+  constructor (opt) {
     this.browser = null
-    this.schedule = 30 // minute
-    this.expires = 60 // minute
+    this.schedule = opt.schedule || 1800 // second
+    this.expires = opt.exports || 3600 // second
     this.tempDir = './tmp/'
 
     // {
@@ -93,10 +93,9 @@ class Browser {
   }
   /**
    * 清除缓存
-   * @return {[type]} [description]
    */
   clearCache () {
-    const expires = this.expires * 60 * 1000 // 缓存时间 ms
+    const expires = this.expires * 1000 // 缓存时间 ms
     const now = Date.now()
     Object.keys(this.cache).forEach(key => {
       const o = this.cache[key]
@@ -112,7 +111,7 @@ class Browser {
   setSchedule () {
     setInterval(() => {
       this.clearCache()
-    }, this.schedule * 60 * 1000)
+    }, this.schedule * 1000)
   }
   /**
    * 获取截图
@@ -133,17 +132,10 @@ class Browser {
     } else {
 
       // width必需是大于0的数字
-      if (Number(width) > 0) {
-        width = Number(width)
-      } else {
-        width = 1366
-      }
+      width = parseInt(width) || 1366
+
       // height必需是大于0的数字
-      if (Number(height) > 0) {
-        height = Number(height)
-      } else {
-        height = 768
-      }
+      height = parseInt(height) || 768
 
       return await this.screenshot({
         target,
