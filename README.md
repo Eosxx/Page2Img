@@ -21,12 +21,10 @@ pm2 start npm --name page2img -- run start
 
 `http://127.0.0.1:8080/img?url=https://github.com/Eosxx/Page2Img&s=.repository-content%20.gutter-condensed`
 
-###　配置
+### 配置
 
 - HOST: `127.0.0.1`，应用地址。
-
 - PORT:　`8080`，应用监听的端口。
-
 - EXPIRES: `3600`，内容的缓存时间，单位：“秒”。
 
 ### 接口
