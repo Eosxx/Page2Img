@@ -21,8 +21,8 @@ router.get('/img', async ctx => {
 
   const query = ctx.query
 
-  // 将css选择器的#用@替换
-  const selector = query.s && query.s.replace(/@/g, '#')
+  // 将css选择器的#用$替换
+  const selector = query.s && query.s.replace(/\$/g, '#')
 
   ctx.body = await browser.getImg({
     target: query.url,
